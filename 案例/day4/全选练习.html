@@ -1,0 +1,68 @@
+<html>
+<head>   
+    <meta charset="utf-8" />
+    <title>Document</title>
+    <style type="text/css">
+    </style>
+</head>
+<body>
+    <input type="checkbox" id="boxid" onclick="setAllNo();" />全选/全不选
+    <br/>
+    <input type="checkbox" name="like" />篮球
+    <input type="checkbox" name="like" />足球
+    <input type="checkbox" name="like" />羽毛球
+    <br/>
+    <input type="button" value="全选" onclick="setAll();"/>
+    <input type="button" value="全不选" onclick="setNo();"/>
+    <input type="button" value="反选" onclick="setOther();"/>
+
+    <script type="text/javascript">
+    
+    
+        function setAll() {
+            var likes = document.getElementsByName("like");
+
+            for(var i=0; i<likes.length; i++) {
+                var like1 = likes[i];
+                like1.checked = true;
+            }
+		}
+
+        function setNo() {
+            var likes1 = document.getElementsByName("like");
+
+            for(var j=0; j<likes1.length; j++) {
+                var like1 = likes1[j];
+                like1.checked = false;
+            }
+		}
+
+        function setOther() {
+            var likes = document.getElementsByName("like");
+
+            for(var i=0; i<likes.length; i++) {
+                var like1 = likes[i];
+                if(like1.checked == true) {
+                    like1.checked = false;
+                }else {
+                    like1.checked = true;
+                }
+                
+            }
+
+        }
+
+        function setAllNo() {
+            var box1= document.getElementById("boxid");
+            if(box1.checked == true) {
+                setAll();
+            }else {
+                setNo();
+            }
+            
+		}
+   
+    </script>
+
+</body>
+</html>

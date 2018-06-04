@@ -1,0 +1,33 @@
+<html>
+<head>   
+    <meta charset="utf-8" />
+    <title>Document</title>
+</head>
+<body>
+    <ul id="ulid">
+        <li>111</li>
+        <li>222</li>
+        <li>333</li>
+
+    </ul>
+
+    <input type="button" value="add" onclick="add1();"/>
+
+    <script type="text/javascript">
+    
+    //在末尾添加节点
+        function add1() {
+            //获取到ul
+            var ul1 = document.getElementById("ulid");
+
+            var li1 = document.createElement("li");
+            var tex1 = document.createTextNode("444");
+            li1.appendChild(tex1);
+            ul1.appendChild(li1);
+
+		}
+        
+    </script>
+
+</body>
+</html>
