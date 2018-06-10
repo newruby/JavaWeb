@@ -4,4 +4,14 @@
 
 <web-app>
   <display-name>Archetype Created Web Application</display-name>
+
+  <servlet>
+    <servlet-name>AServlet</servlet-name>
+    <servlet-class>com.ty.AServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>AServlet</servlet-name>
+    <url-pattern>/ty</url-pattern>
+  </servlet-mapping>
 </web-app>
+
