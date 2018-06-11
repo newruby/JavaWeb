@@ -9,9 +9,17 @@
     <servlet-name>AServlet</servlet-name>
     <servlet-class>com.ty.AServlet</servlet-class>
   </servlet>
+  <servlet>
+    <servlet-name>BServlet</servlet-name>
+    <servlet-class>com.ty.day_10.BServlet</servlet-class>
+  </servlet>
   <servlet-mapping>
     <servlet-name>AServlet</servlet-name>
     <url-pattern>/ty</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>BServlet</servlet-name>
+    <url-pattern>/BServlet</url-pattern>
   </servlet-mapping>
 </web-app>
 
