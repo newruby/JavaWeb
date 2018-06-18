@@ -1,0 +1,17 @@
+比如说像获取表单数据  request.getParameter()  括号里是对应的jsp文件的标签里name的值
+保存cookie  
+Cookie cookie = new Cookie("uname", username); //创建
+cookie.setMaxAge(60*60*24);//保存一天  参数单位秒
+response.addCookie(cookie);////保存cookie  response对象
+
+session相关
+HttpSession session = request.getSession(); //session域中保存用户名
+session.setAttribute("username", username);  //session域方法
+response.sendRedirect("/java-web/loginTest/login.jsp"); //重定向    对象是response
+
+request.setAttribute("msg", "please login");
+//请求转发
+request.getRequestDispatcher("/loginTest/login.jsp").forward(request, response);
+
+
+session.getAttribute("username");  request.getAttribute("") 返回类型Object  需要类型转换
