@@ -25,6 +25,100 @@ ResultSet对象表示查询结果集，只有在执行查询操作后才会有�
 
 ## JDBC程序  
 1. jar包 mysql-connector-java-5.1.13-bin.jar  
-2. 获取连接  
->DriverManager来注册驱动  
->DriveDriverManager来获取Connection对象rManager来获取Connection对象
+
+2. **获取连接**  
+>DriverManager来注册驱动    
+```Class.forName(“com.mysql.jdbc.Driver”) ```  
+>DriveDriverManager来获取Connection对象rManager来获取Connection对象   
+```DriverManager.getConnection(url,username,password)```  
+url:> ```jdbc:mysql://localhost:3306/mydb1```  
+在url中提供参数：
+jdbc:mysql://localhost:3306/mydb1```?useUnicode=true&characterEncoding=UTF8```  指定Unicode字节集和字节集编码
+
+3. **获取Statement**   
+Statement是用来向数据库发送要执行的SQL语句   
+```Statement stmt = con.createStatement();```  
+
+4. **发送SQL增、删、改语句** 
+``` java
+String sql = “insert into user value(’zhangSan’,  ’123’)”;    
+int m = stmt.executeUpdate(sql);
+```
+其中int类型的返回值表示执行这条SQL语句所影响的行数,执行失败，那么executeUpdate()会抛出一个SQLException 
+
+5. **发送SQL查询语句**  
+```java 
+String sql = “select * from userinfo”;
+ResultSet rs = stmt.executeQuery(sql);
+```
+返回结果集ResultSet  
+
+6. **读取结果集中的数据**  
+ResultSet是一张二维的表格，行光标默认的位置在“第一行上方”，所以  
+``` rs.next();//光标移动到第一行 ```  
+```getXXX(int col)方法来获取指定列的数据,常用的方法有：
+Object getObject(int col) //不确定数据类型 使用
+String getString(int col)
+int getInt(int col)
+double getDouble(int col)  
+```
+  
+ ```  rs.getInt(1);//获取第一行第一列的数据 ```    
+
+ 7. **关闭**  
+ 关闭的顺序是先得到的后关闭，后得到的先关闭。
+```
+rs.close();
+stmt.close();
+con.close();  
+```
+## 规范化代码    
+
+无论是否出现异常，都要关闭ResultSet、Statement，以及Connection  
+
+```java  
+public static Connection getConnection() throws Exception {
+		Class.forName("com.mysql.jdbc.Driver");
+		String url = "jdbc:mysql://localhost:3306/mydb1";
+		return DriverManager.getConnection(url, "root", "123");
+	}
+@Test
+	public void query() {
+		Connection con = null;
+		Statement stmt = null;
+		ResultSet rs = null;
+[在try外给出引用的定义]		try {
+			con = getConnection();[在try内为对象实例化]
+			stmt = con.createStatement();
+			String sql = "select * from user";
+			rs = stmt.executeQuery(sql);
+			while(rs.next()) {
+				String username = rs.getString(1);
+				String password = rs.getString(2);
+				System.out.println(username + ", " + password);
+			}
+		} catch(Exception e) {
+			throw new RuntimeException(e);
+		} finally {
+			try {
+				if(rs != null) rs.close();
+				if(stmt != null) stmt.close();
+				if(con != null) con.close();
+[在finally中进行关闭]			} catch(SQLException e) {}
+		}
+	}
+```  
+## JDBC对象介绍  
+1. DriverManager两种异常
+2. Statement stmt = con.createStatement(int,int);   ```[这两个参数是用来确定创建的Statement能生成什么样的结果集]```  
+3. Statement中的方法     
+
+   int executeUpdate(String sql)    
+``` [create、alter、drop、insert、update、delete] ```   
+
+   ResultSet executeQuery(String sql)： ```[select]```  
+   boolean execute()  
+
+    该方法返回的是boolean类型，表示SQL语句是否有结果集！。```[了解！可以执行executeUpdate()和executeQuery()两个方法能执行的sql语句]```
+4. con.createSttement()：生成的结果集：不滚动、不敏感、不可更新！  
+5. 获取一列的数据，有两种方式，getXxx(int columIndex)，还有一种：getXxx(String columnName)
