@@ -120,5 +120,100 @@ public static Connection getConnection() throws Exception {
    boolean execute()  
 
     该方法返回的是boolean类型，表示SQL语句是否有结果集！。```[了解！可以执行executeUpdate()和executeQuery()两个方法能执行的sql语句]```
-4. con.createSttement()：生成的结果集：不滚动、不敏感、不可更新！  
-5. 获取一列的数据，有两种方式，getXxx(int columIndex)，还有一种：getXxx(String columnName)
+4.ResultSet之滚动结果集
+
+
+方法分为两类，一类用来判断游标位置的，另一类是用来移动游标的
+*  con.createStatement()：生成的结果集：不滚动、不敏感、不可更新！  
+* 获取一列的数据，有两种方式，getXxx(int columIndex)，还有一种：getXxx(String columnName)  
+ 
+## PreparedStatement  
+1. 用法  
+   * 给出SQL模板！
+   * 调用Connection的PreparedStatement prepareStatement(String sql模板)；
+   * 调用pstmt的setXxx()系列方法sql模板中的?赋值！
+   * 调用pstmt的executeUpdate()或executeQuery()，但它的方法都没有参数。   
+2. 好处 
+   * 防止SQL攻击；
+   * 提高代码的可读性，以可维护性；
+   * 提高效率  
+
+补充：**什么是SQL攻击**  
+在需要用户输入的地方，用户输入的是SQL语句的片段，最终用户输入的SQL片段与我们DAO中写的SQL语句合成一个完整的SQL语句！例如用户在登录时输入的用户名和密码都是为SQL语句的片段！  
+     **防止SQL攻击 的方法**
+过滤用户输入的数据中是否包含非法字符；  
+分步交验！先使用用户名来查询用户，如果查找到了，再比较密码；  
+使用PreparedStatement。  
+3. 使用    
+   * 使用Connection的prepareStatement(String sql)：即创建它时就让它*与一条SQL模板绑定；  
+   * 调用PreparedStatement的setXXX()系列方法为问号设置值  
+   * 调用executeUpdate()或executeQuery()方法，但要注意，调用没有参数的方法   
+```java
+String sql = “select * from tab_student where s_number=?”;
+PreparedStatement pstmt = con.prepareStatement(sql);
+pstmt.setString(1, “S_1001”);
+ResultSet rs = pstmt.executeQuery();
+rs.close();
+pstmt.clearParameters();[再次使用时需要把原来的设置清空。]
+pstmt.setString(1, “S_1002”);
+rs = pstmt.executeQuery();
+```   
+## JdbcUtils工具类   
+从配置文件中读取配置参数：驱动类、url、用户名，以及密码，然后创建连接对象   
+## UserDao
+
+## 时间类型   
+java中三种时间类型  
+ java.sql包下给出三个与数据库相关的日期时间类型，分别是：
+* Date：表示日期，只有年月日，没有时分秒。会丢失时间；
+* Time：表示时间，只有时分秒，没有年月日。会丢失日期；
+* Timestamp：表示时间戳，有年月日时分秒，以及毫秒。
+
+这三个类都是java.util.Date的子类。
+
+所以数据库时间类型转java.util.Date，把子类对象给父类的引用[
+多态 ？？？]，不需要转换。```java.sql.Date date = …
+java.util.Date d = date;```   
+java.util.Date转换成数据库的三种时间类型    
+
+```java.utl.Date d = new java.util.Date();
+java.sql.Date date = new java.sql.Date(d.getTime());//会丢失时分秒
+```  
+
+
+
+## 大数据[看视频]
+目标：把mp3保存到数据库中！   
+
+## 批处理   
+批处理只针对更新（增、删、改）语句,
+addBatch(String sql) 添加一条语句到“批”中；
+executeBatch()：执行“批”中所有语句。返回值表示每条语句所影响的行数据；
+clearBatch()：清空“批”中的所有语句。   
+执行了“批”之后，“批”中的SQL语句就会被清空  
+
+```java
+for(int i = 0; i < 10; i++) {
+				String number = "S_10" + i;
+				String name = "stu" + i;
+				int age = 20 + i;
+				String gender = i % 2 == 0 ? "male" : "female";
+				String sql = "insert into stu values('" + number + "', '" + name + "', " + age + ", '" + gender + "')";
+				stmt[内部有个集合，用来装载sql语句].addBatch(sql);
+			}
+			stmt.executeBatch[执行批，即一次把批中的所有sql语句发送给服务器]();
+```   
+### PreparedStatement批处理   
+```java
+con = JdbcUtils.getConnection();
+			String sql = "insert into stu values(?,?,?,?)";
+			pstmt = con.prepareStatement(sql);
+			for(int i = 0; i < 10; i++) {
+				pstmt.setString(1, "S_10" + i);
+				pstmt.setString(2, "stu" + i);
+				pstmt.setInt(3, 20 + i);
+				pstmt.setString(4, i % 2 == 0 ? "male" : "female");
+				pstmt.addBatch()[PreparedStatement的addBatch()方法没有参数！];
+			}
+			pstmt.executeBatch[执行批]();
+```
