@@ -260,4 +260,67 @@ private TreadLocal<> xxx = new TreadLocal<>();
 spring中把connection放到ThreadLocal   
 
 ## dbutils   
+> dbutils原理介绍  
+模拟了QueryRunner类的实现  
+使用  
+```java 
+//创建QueryRunner，需要提供数据库连接池对象
+QueryRunner qr = new QueryRunner(JdbcUtils.getDataSource()); 
+//给出 sql模板
+//String sql = "insert into t_stu vlaues (?,?,?,?)";
+String sql = "select * from t_stu where sid = ?";
+//给出参数
+Object[] params = [1000];
+
+// ResultSetHandler<Stu> rh = new ResultSetHandler<Stu>(){
+// 	@Override
+// 	public Stu handle(ResultSet rs) throws SQLException {
+// 		...
+// 	}
+// };  把结果集ResultSet转换成对象
+
+//执行query()方法，需要给出结果集处理器，即ResultSetHandler的实现类对象
+//这里给出的是BeanHandler，它实现了ResultSetHandler，它需要一个类型，然后它会把rs中的数据封装到指定类型的javabean对象中，返回javabean
+Stu stu = qr.query(sql, new BeanHandler<Stu>(Stu.class), params);
+System.out.println(stu);
+
+
+```
+> dbutils结果集处理器
+common-dbutils.jar
+
+QueryRunner
+
+update方法：
+* int update(String sql, Object... params) -->  可执行增、删、改语句
+* int update(Connection con, String sql, Object... parmas) --> 需要调用者提供Connection，这说明本方法不再管理Connection了。支持事务!
+
+query方法：
+* T query(String sql, ResultSetHandler rsh, Object... params) --> 可执行查询
+　> 它会先得到ResultSet，然后调用rsh的handle()把rs转换成需要的类型！
+* T query(Connection con, String sql, ResultSetHadler rsh, Object... params)，支持事务
+
+ResultSetHandler接口：
+* BeanHandler(单行) --> 构造器需要一个Class类型的参数，用来把一行结果转换成指定类型的javaBean对象
+* BeanListHandler(多行) --> 构造器也是需要一个Class类型的参数，用来把一行结果集转换成一个javabean，那么多行就是转换成List对象，一堆javabean
+* MapHandler(单行) --> 把一行结果集转换Map对象
+  > 一行记录：
+    sid  sname  age  gender
+    1001 zs     99   male
+  > 一个Map：
+    {sid:1001, sname:zs, age:99, gender:male}
+* MapListHandler(多行) --> 把一行记录转换成一个Map，多行就是多个Map，即List<Map>！
+* ScalarHandler(单行单列) --> 通常用与select count(*) from t_stu语句！结果集是单行单列的！它返回一个Object
+
+
+
+
+
+
+
+
+
+
+
+
 
