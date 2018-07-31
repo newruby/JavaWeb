@@ -216,6 +216,230 @@ List<Integer> sintList = new ArrayList<Integer>();
 
 ```
 
+## 注解
+
+1. 什么是注解  
+  语法：@注解名称  
+  注解的作用：替代xml配置文件！  
+    servlet3.0中，就可以不再使用web.xml文件，而是所有配置都使用注解！
+  注解是`由框架来读取`使用的！*读取有用*
+
+2. 注解的使用  
+  * 定义注解类：框架的工作
+  * 使用注解：我们的工作
+  * 读取注解（反射）：框架的工作
+
+3. 定义注解类  
+  class A {}  
+  interface A{}  
+  enum A{}  
+```
+  @interface A{}//所有的注解都是Annotation的子类！
+```
+4. 使用注解  
+  注解的作用目标：
+    * 类
+    * 方法
+    * 构造器
+    * 参数
+    * 局部变量
+    * 包 *特殊不用做了解*
+
+5. 注解的属性
+  * 定义属性：  
+    > `格式`：
+	```
+    @interface MyAnno1 {
+	int age();
+	String name();
+    }
+	```
+  * 使用注解时给属性赋值 
+    > @MyAnno1(age=100, name="zhangSan")  
+
+  * 注解属性的默认值：在定义注解时，可以给注解指定默认值！  
+    > int age() default 100;
+    > 在使用注解时，可以不给带有默认值的属性赋值！  
+  * 名为value的属性的特权  
+    > 当使用注解时，如果`只给`名为value的属性赋值时，可以省略“value=”，例如： @MyAnno1(value="hello")，可以书写成 @MyAnno1("hello")
+
+  * 注解属性的类型 `(无包装类型) `
+    > 8种基本类型  
+    > String  
+    > Enum  
+    > Class 
+    > 注解类型  
+    > 以上类型的一维数组类型  
+
+    当给数组类型的属性赋值时，若数组元素的个数为1时，可以省略大括号
+```java
+@MyAnno1(
+	a=100,
+	b="hello",
+	c=MyEnum1.A,
+	d=String.class,
+	e=@MyAnno2(aa=200, bb="world"),
+	f=100 //f={100}
+)
+public class Demo3 {
+
+}
+
+@interface MyAnno1 {
+	int a();
+	String b();
+	MyEnum1 c();
+	Class d();
+	MyAnno2 e();
+	int[] f();
+}
+```
+
+6. 注解的作用  
+目标限定以及保存策略限定  
+  6.1目标限定   
+  让一个注解，它的作用目标只能在类上，不能在方法上，这就叫作用目标的限定！
+  * 在定义注解时，给注解添加注解，这个注解是@Target
+```java
+@Target(value={ElementType.TYPE, ElementType.METHOD, ElementType.FIELD})
+@interface MyAnno1 {
+	
+}
+```
+  6.2 保留策略  
+  * 源代码文件（SOURCE）：注解只在源代码中存在，当编译时就被忽略了  
+  * 字节码文件（CLASS）：注解在源代码中存在，然后编译时会把注解信息放到了class文件，但JVM在加载类时，会忽略注解！  
+  * JVM中（RUNTIME）：注解在源代码、字节码文件中存在，并且在JVM加载类时，会把注解加载到JVM内存中（它是唯一可反射注解！）  
+```java
+  //限定注解的保留策略
+  
+@Retention(RetentionPolicy.RUNTIME)
+@interface MyAnno1 {
+	
+}
+```  
+
+7. 读取注解（反射）
+
+
+
+---
+
+模拟注解的使用场景
+
+---
+
+### 反射泛型信息
+
+Class --> Type getGenericSupperclass()  
+Type --> ParameterizedType，把Type强转成ParameterizedType类型！！！  
+ParameterizedType --> 参数化类型 = A<String>  
+ParameterizedType：Type[]    getActualTypeArguments()，A<String>中的String
+Type[]就是Class[]，我们就得到了类型参数了！  
+
+```java
+abstract class A<T> {
+	public A() {
+		/*
+		 * 在这里获取子类传递的泛型信息，要得到一个Class！
+		 */
+//		Class clazz = this.getClass();//得到子类的类型
+//		Type type = clazz.getGenericSuperclass();//获取传递给父类参数化类型
+//		ParameterizedType pType = (ParameterizedType) type;//它就是A<String>
+//		Type[] types = pType.getActualTypeArguments();//它就是一个Class数组
+//		Class c = (Class)types[0];//它就是String
+//		
+		Class c = (Class)((ParameterizedType)this.getClass()
+				.getGenericSuperclass()).getActualTypeArguments()[0];
+		
+		System.out.println(c.getName());
+	}
+}
+
+class B extends A<String> {
+	
+}
+
+class C extends A<Integer> {
+	
+}
+```
+
+---
+###  反射注解
+
+1. 要求
+  * 注解的保留策略必须是RUNTIME  
+
+2. 反射注解需要从作用目标上返回
+  * 类上的注解，需要使用Class来获取
+  * 方法上的注解，需要Method来获取
+  * 构造器上的注解，需要Construcator来获取
+  * 成员上的，需要使用Field来获取
+
+  Class
+  Method、Constructor、Field：AccessibleObject
+
+  它们都有一个方法：
+  * Annotation getAnnotation(Class)，返回目标上指定类型的注解！
+  * Annotation[] getAnnotations()，返回目标上所有注解！
+
+```java
+
+public class Demo2 {
+	@Test
+	public void fun1() {
+		/*
+		 * 1. 得到作用目标
+		 */
+		Class<A> c = A.class;
+		/*
+		 * 2. 获取指定类型的注解
+		 */
+		MyAnno1 myAnno1 = c.getAnnotation(MyAnno1.class);
+		System.out.println(myAnno1.name() + ", " 
+					+ myAnno1.age() + ", " + myAnno1.sex());
+	}
+	
+	@Test
+	public void fun2() throws SecurityException, NoSuchMethodException {
+		/*
+		 * 1. 得到作用目标
+		 */
+		Class<A> c = A.class;
+		Method method = c.getMethod("fun1");
+		
+		
+		/*
+		 * 2. 获取指定类型的注解
+		 */
+		MyAnno1 myAnno1 = method.getAnnotation(MyAnno1.class);
+		System.out.println(myAnno1.name() + ", " 
+					+ myAnno1.age() + ", " + myAnno1.sex());
+	}
+}
+
+@MyAnno1(name="A类", age=1, sex="男")
+class A {
+	@MyAnno1(name="fun1方法", age=2, sex="女")
+	public void fun1() {
+		
+	}
+}
+
+@Retention(RetentionPolicy.RUNTIME)  //！！！
+@interface MyAnno1 {
+	String name();
+	int age();
+	String sex();
+}
+
+
+
+
+
+
+
 
 
 
